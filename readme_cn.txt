@@ -1,4 +1,4 @@
-使用方法:
+使用方法:编辑resource/config.properties
 #起始页码
 START_INDEX=1
 #结束页码(如果只下载某一页则和起始页码一致)
