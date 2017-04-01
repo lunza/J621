@@ -1,4 +1,4 @@
-how to use:
+how to use: just edit "resource/config.properties"
 #start page
 START_INDEX=1
 #end page
