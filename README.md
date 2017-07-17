@@ -6,4 +6,3 @@ how to use : leaving me a message to get config.properties
 
 ![example](https://github.com/lunza/J621/blob/master/images/1.png)  
 
-![example](https://github.com/lunza/J621/blob/master/images/3.png)  
