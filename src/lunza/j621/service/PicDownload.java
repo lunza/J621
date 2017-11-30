@@ -6,67 +6,91 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
+
+import lunza.j621.vo.ImageVO;
 
 public class PicDownload implements Runnable {
-	private String urlLocation;
+	private static final SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
 
-	private String filePath;
+	private List<ImageVO> list;
+	private static final int POOLLENTH = 8;
 
-	private long start;
+	public PicDownload() {
+		super();
+	}
 
-	private long end;
-
-	private String savePath;
-
-	private int count;
-
-	PicDownload(String urlLocation, String filePath, long start, long end, String savePath) {
-		this.urlLocation = urlLocation;
-		this.filePath = filePath;
-		this.start = start;
-		this.end = end;
-		this.savePath = savePath;
-
+	public PicDownload(List<ImageVO> list) {
+		super();
+		this.list = list;
 	}
 
 	@Override
 	public void run() {
+
+		String s1 = format.format(new Date());
+		System.out.println(s1);
+
+		RandomAccessFile out = null;
+		InputStream in = null;
+		HttpURLConnection conn = null;
 		try {
-			
-			HttpURLConnection conn = getHttp();
-			conn.setRequestProperty("Range", "bytes=" + start + "-" + end);
+			for (ImageVO imageVO : list) {
+				long start = 0;
+				long end = 0;
+				conn = getHttp(imageVO.getUrlLocation());
+				long len = conn.getContentLength();
+				for (int i = 0; i < POOLLENTH; i++) {
+					start = i * len / POOLLENTH;
+					end = (i + 1) * len / POOLLENTH - 1;
+					if (i == POOLLENTH - 1) {
+						end = len;
+					}
+				}
+				conn.setRequestProperty("Range", "bytes=" + start + "-" + end);
 
-			File file = new File(savePath);
-			if (!file.exists()) {
-				file.mkdirs();
-			}
-			RandomAccessFile out = null;
-			if (file != null) {
-				out = new RandomAccessFile(filePath, "rwd");
-			}
-			out.seek(start);
-			InputStream in = conn.getInputStream();
-			byte[] b = new byte[1024];
-			int len = 0;
+				File file = new File(imageVO.getSavePath());
+				if (!file.exists()) {
+					file.mkdirs();
+				}
+				if (file != null) {
+					out = new RandomAccessFile(imageVO.getFilePath(), "rwd");
+				}
+				out.seek(start);
+				in = conn.getInputStream();
+				byte[] b = new byte[1024];
+				int len2 = 0;
+				while ((len2 = in.read(b)) != -1) {
+					out.write(b, 0, len2);
+				}
+				System.out.println("渲染完成");
+				String s2 = format.format(new Date());
+				System.out.println(s2);
+				System.out.println(format.parse(s2).getTime() - format.parse(s1).getTime());
 
-			while ((len = in.read(b)) != -1) {
-				out.write(b, 0, len);
 			}
-			count++;
-			System.out.println("渲染完成");
-			
-			in.close();
-			out.close();
-			System.err.println("渲染完成");
-			
-		} catch (Exception e) {
+
+		} catch (
+
+		Exception e) {
 			e.getMessage();
+		} finally {
+			try {
+				in.close();
+				out.close();
+				System.gc();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.err.println("渲染完成");
 		}
 
 	}
 
-	public HttpURLConnection getHttp() throws IOException {
+	public HttpURLConnection getHttp(String urlLocation) throws IOException {
 		URL url = null;
 		if (urlLocation != null) {
 			url = new URL(urlLocation);
@@ -77,7 +101,5 @@ public class PicDownload implements Runnable {
 
 		return conn;
 	}
-
-
 
 }

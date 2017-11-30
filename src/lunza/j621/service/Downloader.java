@@ -15,11 +15,14 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import lunza.j621.vo.ImageVO;
+
 public class Downloader {
 
 	public static void download(String config) {
 		Properties pro = new Properties();
 		try {
+			String threadPoolSize = pro.getProperty("THREAD_POOL_SIZE");
 			InputStream in = new BufferedInputStream(new FileInputStream(config));
 			pro.load(in);
 			int startIndex = Integer.parseInt(pro.getProperty("START_INDEX"));
@@ -35,8 +38,8 @@ public class Downloader {
 			System.err.println("详细地址分析完毕,开始分析图片静态地址");
 			List<String> HDImgUrlList = getHDImgUrlList(SimpleImgUrlList, key);
 			System.err.println("静态地址分析完毕,开始下载图片");
-			downloadPic(HDImgUrlList, localAddr, key, startFileName);
-			
+			List<ImageVO> li = downloadPic(HDImgUrlList, localAddr, key, startFileName);
+			ThreadPool.getFileWithThreadPool(li,threadPoolSize);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -120,14 +123,13 @@ public class Downloader {
 		int count = 1;
 		for (String imgUrl : simpleImgUrlList) {
 			doc = Jsoup.connect(imgUrl).get();
-			Element img =doc.getElementById("image");
+			Element img = doc.getElementById("image");
 			try {
 				hdImgUrl = img.attr("src");
 			} catch (NullPointerException e) {
 				System.err.println("跳过flash文件");
 				continue;
 			}
-			
 
 			System.out.println("正在分析第" + count + "张图片静态地址,地址为" + hdImgUrl);
 			HDImgUrlList.add(hdImgUrl);
@@ -142,28 +144,33 @@ public class Downloader {
 	 * @param hDImgUrlList
 	 * @param localAddr
 	 * @throws IOException
-	 * @throws InterruptedException 
+	 * @throws InterruptedException
 	 */
-	public static void downloadPic(List<String> HDImgUrlList, String localAddr, String key, int startFileName)
+	public static List<ImageVO> downloadPic(List<String> HDImgUrlList, String localAddr, String key, int startFileName)
 			throws Exception {
+		List<ImageVO> li = new ArrayList<ImageVO>();
 		int count = startFileName;
 		int total = 0;
 		String filePath = null;
 		String savePath = null;
-		
+
 		for (String urlLocation : HDImgUrlList) {
+			ImageVO image = new ImageVO();
 			savePath = localAddr + key + "\\";
 			filePath = localAddr + key + "\\" + count + "."
 					+ urlLocation.substring(urlLocation.length() - 3, urlLocation.length());
-			ThreadPool pool = new ThreadPool();
-			pool.getFileWithThreadPool(urlLocation, filePath, 4, savePath);
+			image.setFilePath(filePath);
+			image.setSavePath(savePath);
+			image.setUrlLocation(urlLocation);
 			System.out.println("正在扫描第" + count + "张图片,地址为" + filePath);
+			li.add(image);
 			count++;
 			total++;
-			
 		}
+		// ThreadPool.getFileWithThreadPool(urlLocation, filePath, 4, savePath);
 		System.err.println("所有图片扫描完毕!本次共下载" + total + "张图片");
 		System.err.println("正在渲染请稍等");
+		return li;
 		// 关闭ExecutorService
 	}
 }
