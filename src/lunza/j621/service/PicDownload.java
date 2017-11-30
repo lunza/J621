@@ -1,6 +1,7 @@
 package lunza.j621.service;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
@@ -33,34 +34,38 @@ public class PicDownload implements Runnable {
 		String s1 = format.format(new Date());
 		System.out.println(s1);
 
-		RandomAccessFile out = null;
-		InputStream in = null;
-		HttpURLConnection conn = null;
+
 		try {
 			for (ImageVO imageVO : list) {
+				//RandomAccessFile out = null;
+				FileOutputStream out = null;
+				InputStream in = null;
+				HttpURLConnection conn = null;
 				long start = 0;
 				long end = 0;
 				conn = getHttp(imageVO.getUrlLocation());
-				long len = conn.getContentLength();
-				for (int i = 0; i < POOLLENTH; i++) {
-					start = i * len / POOLLENTH;
-					end = (i + 1) * len / POOLLENTH - 1;
-					if (i == POOLLENTH - 1) {
-						end = len;
-					}
-				}
-				conn.setRequestProperty("Range", "bytes=" + start + "-" + end);
+//				long len = conn.getContentLength();
+//				for (int i = 0; i < POOLLENTH; i++) {
+//					start = i * len / POOLLENTH;
+//					end = (i + 1) * len / POOLLENTH - 1;
+//					if (i == POOLLENTH - 1) {
+//						end = len;
+//					}
+//				}
+//				conn.setRequestProperty("Range", "bytes=" + start + "-" + end);
 
 				File file = new File(imageVO.getSavePath());
+				System.out.println(imageVO.getFilePath());
 				if (!file.exists()) {
 					file.mkdirs();
 				}
 				if (file != null) {
-					out = new RandomAccessFile(imageVO.getFilePath(), "rwd");
+				//	out = new RandomAccessFile(imageVO.getFilePath(), "rwd");
+					out = new FileOutputStream(imageVO.getFilePath());
 				}
-				out.seek(start);
+				//out.seek(start);
 				in = conn.getInputStream();
-				byte[] b = new byte[1024];
+				byte[] b = new byte[8096];
 				int len2 = 0;
 				while ((len2 = in.read(b)) != -1) {
 					out.write(b, 0, len2);
@@ -69,22 +74,22 @@ public class PicDownload implements Runnable {
 				String s2 = format.format(new Date());
 				System.out.println(s2);
 				System.out.println(format.parse(s2).getTime() - format.parse(s1).getTime());
-
-			}
-
-		} catch (
-
-		Exception e) {
-			e.getMessage();
-		} finally {
-			try {
 				in.close();
 				out.close();
 				System.gc();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
+
+		} catch (Exception e) {
+			e.getMessage();
+		} finally {
+//			try {
+//				in.close();
+//				out.close();
+//				System.gc();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
 			System.err.println("渲染完成");
 		}
 
