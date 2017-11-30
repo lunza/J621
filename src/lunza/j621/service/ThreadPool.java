@@ -10,10 +10,11 @@ import lunza.j621.vo.ImageVO;
 
 public class ThreadPool {
 
-	public static ExecutorService getFileWithThreadPool(List<ImageVO> tdData,String threadPoolSize1) throws IOException {
+	public static ExecutorService getFileWithThreadPool(List<ImageVO> tdData,int threadPoolSize) throws IOException {
 		ExecutorService taskExecutor = Executors.newCachedThreadPool();
 		int end = tdData.size();
-		Integer threadPoolSize = new Integer(threadPoolSize1);
+		List<ImageVO> data = new ArrayList<ImageVO>();
+		List<List<ImageVO>> li = new ArrayList<List<ImageVO>>();
 		try {
 			// 数据集拆分
 			if (tdData.size() > threadPoolSize) {
@@ -25,16 +26,18 @@ public class ThreadPool {
 					startPoint = i - 1;
 					endPoint = i;
 					if (endPoint != threadPoolSize) {
-						List<ImageVO> data = getDataList(tdData, end / threadPoolSize * startPoint,
+						data = getDataList(tdData, end / threadPoolSize * startPoint,
 								end / threadPoolSize * endPoint);
+						li.add(data);
 						// 处理余数
 					} else {
-						List<ImageVO> data = getDataList(tdData, end / threadPoolSize * startPoint, end);
+						data = getDataList(tdData, end / threadPoolSize * startPoint, end);
+						li.add(data);
 					}
 				}
 				// 生成新线程
 				for (int i = 0; i <= threadPoolSize - 1; i++) {
-					taskExecutor.execute(new PicDownload(tdData));
+					taskExecutor.execute(new PicDownload(li.get(i)));
 					// 需要加延迟5到10毫秒，否则易发生数据库死锁
 					Thread.sleep(10);
 				}

@@ -1,15 +1,12 @@
 package lunza.j621.service;
 
 import java.io.BufferedInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ExecutorService;
-
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -22,10 +19,10 @@ public class Downloader {
 	public static void download(String config) {
 		Properties pro = new Properties();
 		try {
-			String threadPoolSize = pro.getProperty("THREAD_POOL_SIZE");
 			InputStream in = new BufferedInputStream(new FileInputStream(config));
 			pro.load(in);
 			int startIndex = Integer.parseInt(pro.getProperty("START_INDEX"));
+			int threadPoolSize = Integer.parseInt(pro.getProperty("THREAD_POOL_SIZE"));
 			int endIndex = Integer.parseInt(pro.getProperty("END_INDEX"));
 			String key = pro.getProperty("KEY");
 			int minScore = Integer.parseInt(pro.getProperty("MIN_SCORE"));
