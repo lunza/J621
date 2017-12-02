@@ -70,7 +70,7 @@ public class PicDownload implements Runnable {
 				while ((len2 = in.read(b)) != -1) {
 					out.write(b, 0, len2);
 				}
-				System.out.println("渲染完成");
+				System.out.println("下载完成");
 				String s2 = format.format(new Date());
 				System.out.println(s2);
 				System.out.println(format.parse(s2).getTime() - format.parse(s1).getTime());
@@ -90,7 +90,7 @@ public class PicDownload implements Runnable {
 //				// TODO Auto-generated catch block
 //				e.printStackTrace();
 //			}
-			System.err.println("渲染完成");
+			System.err.println("线程关闭");
 		}
 
 	}

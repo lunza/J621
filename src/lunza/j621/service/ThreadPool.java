@@ -52,7 +52,7 @@ public class ThreadPool {
 			taskExecutor.shutdown();
 			while (true) {
 				if (taskExecutor.isTerminated()) {
-					System.out.println("所有的子线程都结束了！");
+					System.out.println("下载完成，本次共"+tdData.size()+"张图片");
 					System.gc();
 					break;
 				}
